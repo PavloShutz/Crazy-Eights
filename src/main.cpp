@@ -1,6 +1,7 @@
 // Copyright 2025 Pavlo Shutz
 
 #include <memory>
+#include <random>
 
 #include <SFML/Graphics.hpp>
 
@@ -51,6 +52,15 @@ class StockPile {
 		 fillDeck();
 	 }
 
+	 std::unique_ptr<Card> getRandomCard() {
+		 std::mt19937 mt{ std::random_device{}() };
+
+		 std::uniform_int_distribution x_r{ 0, 12 };
+		 std::uniform_int_distribution y_r{ 0, 3 };
+
+		 return std::move(m_deck[y_r(mt) * 13 + x_r(mt)]);
+	 }
+
  private:
 	 void fillDeck() {
 		 int height = m_deckTexture.get()->getSize().y / 4;
@@ -65,10 +75,6 @@ class StockPile {
 		 }
 	 }
 
-	 std::unique_ptr<Card> getRandomCard() {
-
-	 }
-
  private:
 	 std::shared_ptr<sf::Texture> m_deckTexture;
 	 std::array<std::unique_ptr<Card>, 52> m_deck;
@@ -80,6 +86,12 @@ class Player {
 	 
 	 void addCard(std::unique_ptr<Card> card) {
 		 m_cards.push_back(std::move(card));
+	 }
+
+	 void displayCards(sf::RenderWindow& window) const {
+		 for (const auto& card : m_cards) {
+			 window.draw(*card);
+		 }
 	 }
 
  private:
@@ -105,6 +117,10 @@ int main() {
 
 	StockPile stockPile("Card Asset/Standard 52 Cards/solitaire/all_cards.png");
 
+	Player player1;
+
+	player1.addCard(stockPile.getRandomCard());
+
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>()) {
@@ -123,6 +139,7 @@ int main() {
 
 		sf::Sprite background(backgroundTexture.getTexture());
 		window.draw(background);
+		player1.displayCards(window);
 
 		window.display();
 	}
