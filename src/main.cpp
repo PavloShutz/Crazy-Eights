@@ -1,9 +1,11 @@
 // Copyright 2025 Pavlo Shutz
 
 #include <memory>
-#include <random>
+#include <utility>
 
 #include <SFML/Graphics.hpp>
+
+#include "../include/Random.hpp"
 
 class Card : public sf::Drawable {
  public:
@@ -20,12 +22,13 @@ class Card : public sf::Drawable {
 		 : m_deckTexture(deckTexture)
 		 , m_deckRect(deckRect)
 		 , m_pos(m_deckRect.position.x / 2, m_deckRect.position.y / 2) {
-		 m_suit = static_cast<Suit>(m_deckRect.size.y % 4);
-		 m_rank = static_cast<int>(m_deckRect.size.x % 13) + 1;
+		 m_suit = static_cast<Suit>(m_deckRect.position.y / m_deckRect.size.y);
+		 m_rank = static_cast<int>(m_deckRect.position.x / m_deckRect.size.x) + 1;
 	 }
 
-	 Card(Card&&) = default;
-	 Card& operator=(Card&&) = default;
+	 ~Card() {
+		 m_deckTexture.reset();
+	 }
 
  private:
 	 void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
@@ -52,13 +55,22 @@ class StockPile {
 		 fillDeck();
 	 }
 
-	 std::unique_ptr<Card> getRandomCard() {
-		 std::mt19937 mt{ std::random_device{}() };
+	 void shuffle() {
+		 for (int i{ 0 }; i < 1000; ++i) {
+			 int pos1 = Random::get<int>(0, m_deck.size() - 1);
+			 int pos2 = Random::get<int>(0, m_deck.size() - 1);
+			 std::swap(m_deck[pos1], m_deck[pos2]);
+		 }
+	 }
 
-		 std::uniform_int_distribution x_r{ 0, 12 };
-		 std::uniform_int_distribution y_r{ 0, 3 };
+	 void displayCards(sf::RenderWindow& window) const {
+		 for (const auto& card : m_deck) {
+			 window.draw(*card);
+		 }
+	 }
 
-		 return std::move(m_deck[y_r(mt) * 13 + x_r(mt)]);
+	 void showCard(sf::RenderWindow& window) const {
+		 window.draw(*m_deck[13]);
 	 }
 
  private:
@@ -116,10 +128,7 @@ int main() {
 	table.setPosition({ 0, static_cast<float>(window.getSize().y - table.getTextureRect().size.y) / 2.f });
 
 	StockPile stockPile("Card Asset/Standard 52 Cards/solitaire/all_cards.png");
-
-	Player player1;
-
-	player1.addCard(stockPile.getRandomCard());
+	stockPile.shuffle();
 
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
@@ -139,7 +148,7 @@ int main() {
 
 		sf::Sprite background(backgroundTexture.getTexture());
 		window.draw(background);
-		player1.displayCards(window);
+		stockPile.showCard(window);
 
 		window.display();
 	}
