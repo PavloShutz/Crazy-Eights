@@ -21,7 +21,7 @@ class Card : public sf::Drawable {
 	 Card(sf::IntRect&& deckRect, std::shared_ptr<sf::Texture> deckTexture)
 		 : m_deckTexture(deckTexture)
 		 , m_deckRect(deckRect)
-		 , m_pos(m_deckRect.position.x / 2, m_deckRect.position.y / 2) {
+		 , m_pos(m_deckRect.position / 2) {
 		 m_suit = static_cast<Suit>(m_deckRect.position.y / m_deckRect.size.y);
 		 m_rank = static_cast<int>(m_deckRect.position.x / m_deckRect.size.x) + 1;
 	 }
@@ -65,13 +65,28 @@ class StockPile {
 
 	 void displayCards(sf::RenderWindow& window) const {
 		 for (const auto& card : m_deck) {
-			 window.draw(*card);
+			 if (card) {
+				 window.draw(*card);
+			 }
 		 }
 	 }
 
 	 void showCard(sf::RenderWindow& window) const {
 		 window.draw(*m_deck[13]);
 	 }
+
+	 std::unique_ptr<Card>& getRandomCard() {
+		 int pos = Random::get<int>(0, m_deck.size() - 1);
+		 
+		 if (!m_deck[pos])
+			 return getRandomCard();  // this is not good at all, but it's funny :)
+		 
+		 return m_deck[pos];
+	 }
+
+     std::array<std::unique_ptr<Card>, 52>& getDeck() {
+         return m_deck;
+     }
 
  private:
 	 void fillDeck() {
@@ -96,7 +111,7 @@ class Player {
  public:
 	 Player() = default;
 	 
-	 void addCard(std::unique_ptr<Card> card) {
+	 void takeCard(std::unique_ptr<Card>& card) {
 		 m_cards.push_back(std::move(card));
 	 }
 
@@ -104,6 +119,17 @@ class Player {
 		 for (const auto& card : m_cards) {
 			 window.draw(*card);
 		 }
+	 }
+
+	 void placeCardsInStockPile(StockPile& stockPile) {
+		 for (auto& card : stockPile.getDeck()) {
+			 if (!card) {
+				 std::unique_ptr<Card> m_card = std::move(m_cards.back());
+				 m_cards.pop_back();
+				 std::swap(card, m_card);
+			 }
+		 }
+		 m_cards.clear();
 	 }
 
  private:
@@ -130,10 +156,22 @@ int main() {
 	StockPile stockPile("Card Asset/Standard 52 Cards/solitaire/all_cards.png");
 	stockPile.shuffle();
 
+	Player player;
+
+	player.takeCard(stockPile.getRandomCard());
+	player.takeCard(stockPile.getRandomCard());
+	player.takeCard(stockPile.getRandomCard());
+	player.takeCard(stockPile.getRandomCard());
+
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>()) {
 				window.close();
+			}
+			if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+				if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
+					player.placeCardsInStockPile(stockPile);
+				}
 			}
 		}
 
@@ -148,7 +186,7 @@ int main() {
 
 		sf::Sprite background(backgroundTexture.getTexture());
 		window.draw(background);
-		stockPile.showCard(window);
+		stockPile.displayCards(window);
 
 		window.display();
 	}
