@@ -16,14 +16,26 @@ class Card : public sf::Drawable {
 		Spade
 	 };
 
-	 Card() = default;
+	 Card()
+		: m_card(m_cardBack) {
 
-	 Card(sf::IntRect&& deckRect, std::shared_ptr<sf::Texture> deckTexture)
+	 }
+
+	 Card(sf::IntRect&& deckRect, std::shared_ptr<sf::Texture> deckTexture, bool isVisible)
 		 : m_deckTexture(deckTexture)
 		 , m_deckRect(deckRect)
-		 , m_pos(m_deckRect.position / 2) {
+		 , m_pos({500, 250})
+		 , m_card(m_cardBack)
+		 , m_isVisible(isVisible) {
 		 m_suit = static_cast<Suit>(m_deckRect.position.y / m_deckRect.size.y);
 		 m_rank = static_cast<int>(m_deckRect.position.x / m_deckRect.size.x) + 1;
+
+		 if (m_isVisible) {
+			 m_card.setTexture(*m_deckTexture.lock());
+			 m_card.setTextureRect(m_deckRect);
+			 m_card.setScale({ 0.5f, 0.5f });
+			 m_card.setPosition(m_pos);
+		 }
 	 }
 
 	 ~Card() {
@@ -32,20 +44,20 @@ class Card : public sf::Drawable {
 
  private:
 	 void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-		 sf::Sprite card(*m_deckTexture.lock());
-		 card.setTextureRect(m_deckRect);
-		 card.setScale({ 0.5f, 0.5f });
-		 card.setPosition(m_pos);
-
-		 target.draw(card, states);
+		 target.draw(m_card, states);
 	 }
 
 	 std::weak_ptr<sf::Texture> m_deckTexture;
+	 static const sf::Texture m_cardBack;
+	 sf::Sprite m_card;
 	 sf::IntRect m_deckRect{};
 	 sf::Vector2f m_pos{};
 	 Suit m_suit{ Suit::Diamond };
 	 int m_rank{ 1 };
+	 bool m_isVisible{ false };
 };
+
+const sf::Texture Card::m_cardBack{ "Card Asset/Standard 52 Cards/solitaire/individuals/card back/card_back.png" };
 
 class StockPile {
  public:
@@ -78,8 +90,9 @@ class StockPile {
 	 std::unique_ptr<Card>& getRandomCard() {
 		 int pos = Random::get<int>(0, m_deck.size() - 1);
 		 
-		 if (!m_deck[pos])
+		 if (!m_deck[pos]) {
 			 return getRandomCard();  // this is not good at all, but it's funny :)
+		 }
 		 
 		 return m_deck[pos];
 	 }
@@ -97,7 +110,7 @@ class StockPile {
 			 for (int i{ 0 }; i < 13; ++i) {
 				 m_deck[j * 13 + i] = std::move(std::make_unique<Card>(
 					 sf::IntRect({ width * i, height * j }, { width, height }),
-					 m_deckTexture));
+					 m_deckTexture, true));
 			 }
 		 }
 	 }
@@ -158,16 +171,12 @@ int main() {
 
 	Player player;
 
-	player.takeCard(stockPile.getRandomCard());
-	player.takeCard(stockPile.getRandomCard());
-	player.takeCard(stockPile.getRandomCard());
-	player.takeCard(stockPile.getRandomCard());
-
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>()) {
 				window.close();
 			}
+
 			if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
 				if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
 					player.placeCardsInStockPile(stockPile);
