@@ -166,6 +166,14 @@ int main() {
 	sf::Sprite table(tableTexture);
 	table.setPosition({ 0, static_cast<float>(window.getSize().y - table.getTextureRect().size.y) / 2.f });
 
+	backgroundTexture.clear(sf::Color::Black);
+
+	backgroundTexture.draw(canvas);
+	backgroundTexture.draw(table);
+
+	backgroundTexture.display();
+	sf::Sprite background(backgroundTexture.getTexture());
+
 	StockPile stockPile("Card Asset/Standard 52 Cards/solitaire/all_cards.png");
 	stockPile.shuffle();
 
@@ -184,16 +192,8 @@ int main() {
 			}
 		}
 
-		backgroundTexture.clear(sf::Color::Black);
-
-		backgroundTexture.draw(canvas);
-		backgroundTexture.draw(table);
-
-		backgroundTexture.display();
-
 		window.clear();
 
-		sf::Sprite background(backgroundTexture.getTexture());
 		window.draw(background);
 		stockPile.displayCards(window);
 
