@@ -12,7 +12,16 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(CrazyEights src/main.cpp include/Random.hpp)
+add_executable(CrazyEights 
+    "src/main.cpp" 
+    "src/Player.cpp" 
+    "src/Card.cpp" 
+    "src/StockPile.cpp" 
+    "src/Heap.cpp" 
+    "include/Random.hpp"
+    "include/Card.hpp"
+    "include/StockPile.hpp"
+)
 
 add_custom_command(TARGET CrazyEights POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy_directory
