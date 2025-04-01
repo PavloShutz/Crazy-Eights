@@ -1,7 +1,7 @@
 #include "../include/StockPile.hpp"
 
-StockPile::deckWidth = 13;
-StockPile::deckHeight = 4;
+const int StockPile::deckWidth = 13;
+const int StockPile::deckHeight = 4;
 
 StockPile::StockPile(const std::filesystem::path& filename)
     : m_deckTexture{ std::make_shared<sf::Texture>(filename) } {
