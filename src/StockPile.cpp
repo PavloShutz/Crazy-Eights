@@ -1,5 +1,8 @@
 #include "../include/StockPile.hpp"
 
+StockPile::deckWidth = 13;
+StockPile::deckHeight = 4;
+
 StockPile::StockPile(const std::filesystem::path& filename)
     : m_deckTexture{ std::make_shared<sf::Texture>(filename) } {
   m_deckTexture.get()->setSmooth(true);
@@ -41,8 +44,8 @@ std::array<std::unique_ptr<Card>, 52>& StockPile::getDeck() {
 }
 
 void StockPile::fillDeck() {
-  int height = m_deckTexture.get()->getSize().y / 4;
-  int width = m_deckTexture.get()->getSize().x / 13;
+  int height = m_deckTexture.get()->getSize().y / deckHeight;
+  int width = m_deckTexture.get()->getSize().x / deckWidth;
 
   for (int j{0}; j < 4; ++j) {
     for (int i{0}; i < 13; ++i) {

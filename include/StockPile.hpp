@@ -19,6 +19,10 @@ class StockPile {
 
   std::array<std::unique_ptr<Card>, 52>& getDeck();
 
+ public:
+  static const int deckWidth;
+  static const int deckHeight;
+
  private:
   void fillDeck();
 
