@@ -29,10 +29,10 @@ void StockPile::showCard(sf::RenderWindow& window) const {
 std::unique_ptr<Card>& StockPile::getRandomCard() {
   int pos = Random::get<int>(0, m_deck.size() - 1);
 
-  if (!m_deck[pos]) {
-    return getRandomCard();  // this is not good at all, but it's funny :)
+  while (!m_deck[pos]) {
+    pos = Random::get<int>(0, m_deck.size() - 1);
   }
-
+  
   return m_deck[pos];
 }
 
