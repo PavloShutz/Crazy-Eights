@@ -13,6 +13,8 @@ class Card : public sf::Drawable {
 
   ~Card();
 
+  void setPosition(sf::Vector2f newPos);
+
  private:
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     target.draw(m_card, states);

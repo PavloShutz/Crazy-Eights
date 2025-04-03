@@ -66,6 +66,7 @@ int main() {
 
     window.draw(background);
     stockPile.displayCards(window);
+    player.displayCards(window);
 
     window.display();
   }

@@ -22,6 +22,11 @@ Card::Card(sf::IntRect&& deckRect, std::shared_ptr<sf::Texture> deckTexture,
 
 Card::~Card() { m_deckTexture.reset(); }
 
+void Card::setPosition(sf::Vector2f newPos) {
+  m_pos = newPos;
+  m_card.setPosition(m_pos);
+}
+
 const sf::Texture Card::m_cardBack{
     "Card Asset/Standard 52 Cards/solitaire/individuals/card "
     "back/card_back.png"};
