@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
+
+set(DCMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE ON "DCMAKE_POLICY_VERSION_MINIMUM")
+
 project(Crazy-Eights LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -11,7 +14,6 @@ FetchContent_Declare(SFML
     EXCLUDE_FROM_ALL
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
-
 
 add_executable(CrazyEights 
     "src/main.cpp" 
